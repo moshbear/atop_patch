@@ -1,0 +1,93 @@
+ATOP can be used without kernel-patches. In that case no
+information is available about the disk- and network-traffic on a
+per-process basis. This means a.o. that the selection 'd' (show
+disk-transfers per process) and 'n' (show network-transfers per
+process) can not be used, and the columns shown in the generic
+screen are different.
+
+Two kernel-patches are delivered for ATOP:
+
+  01patch-3.2.2_atopcnt
+	This patch takes care that statistical counters are added
+	to the process-administration (task_struct) and that these
+	counters are incremented per process.
+	The additional counters are shown via the process'
+	/proc/PID/stat file as a second line of counters.
+	The meaning of these counters:
+	  - disk read transfers
+	  - disk accumulated number of sectors read
+	  - disk write transfers
+	  - disk accumulated number of sectors written
+	  - tcp  send requests
+	  - tcp  accumulated number of bytes transmitted
+	  - tcp  receive requests
+	  - tcp  accumulated number of bytes received
+	  - udp  send requests
+	  - udp  accumulated number of bytes transmitted
+	  - udp  receive requests
+	  - udp  accumulated number of bytes received
+	  - raw  send requests (e.g. echo requests by ping)
+	  - raw  receive requests
+
+	When this patch is installed, ATOP automatically shows
+	another layout for the generic screen (including disk-
+	and network-transfers for active processes). However for
+	terminated process these additional counters are not shown,
+	because the conventional layout of the process-accounting
+	record has not been adapted.
+
+  02patch-3.2.2_atopacct
+	This patch takes care that the additional statistical
+	counters are added to the process-accounting record (yes,
+	this means an incompatible layout of this record).
+
+	Notice that this patch is an extension of the 01XXX_atopcnt
+	patch! This patch can not be installed on its own.
+
+	When this patch is installed, ATOP automatically shows
+	the additional counters for terminated processes as well.
+	Since the pid of processes is also stored in the modified
+	process-accounting record, matching this info with the
+	formerly running process is less time-consuming compared to
+	the conventional process-accounting record.
+
+
+The following steps are needed to install these patches:
+
+     1.	Install the kernel-sources (e.g. as a subdirectory of /usr/src).
+
+     2. Go to the new subdirectory, e.g. linux-3.2.2
+  
+     3.	Start the command to patch the new tree.
+
+	Example for kernel-version 3.2.2:
+
+		patch -p1 < 01patch-3.2.2_atopcnt
+
+		patch -p1 < 02patch-3.2.2_atopacct
+
+	This will modify the kernel-sources under /usr/src/linux-3.2.2
+
+     4.	Build a new kernel and reboot.
+
+	When the patch ..._atopacct has been installed, take care that
+	the current process-accounting file (filled with the old
+ 	record-layout till now) is removed. This is only relevant when
+ 	your system permanently logs process-accounting records triggered
+	by the file /etc/logrotate.d/psacct. Thus if this file is present,
+	issue the following commands after you rebooted your system:
+
+	  /usr/sbin/accton                      # switch off accounting
+       	  > /var/account/pacct			# empty accounting file
+       	  /usr/sbin/accton /var/account/pacct	# switch on  accounting
+
+
+Gerlof Langeveld <gerlof@atoptool.nl>
+
+Credits for this specific port: Marko Zagožen
+Updated for 3.2.2 by: Andrey Vul
+
+Disclaimer:
+The authors deny any warranty for any data loss and damage whatsoever
+that may be caused directly or indirectly by using this software.
+This is experimental software. Use at your own risk.

@@ -1,0 +1,166 @@
+diff -Naur a/block/blk-core.c b/block/blk-core.c
+--- a/block/blk-core.c	2012-02-12 14:42:59.488856338 -0500
++++ b/block/blk-core.c	2012-02-12 19:18:24.133269854 -0500
+@@ -92,6 +92,17 @@
+ 		rq->part = part;
+ 	}
+ 
++	switch (rw) {                                                       /* ATOP */
++	case READ:                                                          /* ATOP */
++		current->group_leader->stat.dsk_rio += new_io;              /* ATOP */
++		current->group_leader->stat.dsk_rsz += blk_rq_sectors(rq);  /* ATOP */
++		break;                                                      /* ATOP */
++	case WRITE:                                                         /* ATOP */
++		current->group_leader->stat.dsk_wio += new_io;              /* ATOP */
++		current->group_leader->stat.dsk_wsz += blk_rq_sectors(rq);  /* ATOP */
++		break;                                                      /* ATOP */
++	}                                                                   /* ATOP */
++
+ 	part_stat_unlock();
+ }
+ 
+diff -Naur a/fs/proc/array.c b/fs/proc/array.c
+--- a/fs/proc/array.c	2012-01-04 18:55:44.000000000 -0500
++++ b/fs/proc/array.c	2012-02-12 16:19:35.692393822 -0500
+@@ -512,6 +512,25 @@
+ 		(unsigned long long)delayacct_blkio_ticks(task),
+ 		cputime_to_clock_t(gtime),
+ 		cputime_to_clock_t(cgtime));
++
++		seq_printf(m,                                /* ATOP */
++			"%lu %llu %lu %llu %lu %llu %lu "    /* ATOP */
++			"%llu %lu %llu %lu %llu %lu %lu\n",  /* ATOP */
++			task->stat.dsk_rio,                  /* ATOP */
++			task->stat.dsk_rsz,                  /* ATOP */
++			task->stat.dsk_wio,                  /* ATOP */
++			task->stat.dsk_wsz,                  /* ATOP */
++			task->stat.tcp_snd,                  /* ATOP */
++			task->stat.tcp_ssz,                  /* ATOP */
++			task->stat.tcp_rcv,                  /* ATOP */
++			task->stat.tcp_rsz,                  /* ATOP */
++			task->stat.udp_snd,                  /* ATOP */
++			task->stat.udp_ssz,                  /* ATOP */
++			task->stat.udp_rcv,                  /* ATOP */
++			task->stat.udp_rsz,                  /* ATOP */
++			task->stat.raw_snd,                  /* ATOP */
++			task->stat.raw_rcv);                 /* ATOP */
++ 
+ 	if (mm)
+ 		mmput(mm);
+ 	return 0;
+diff -Naur a/include/linux/sched.h b/include/linux/sched.h
+--- a/include/linux/sched.h	2012-02-12 14:43:00.768840337 -0500
++++ b/include/linux/sched.h	2012-02-12 19:15:32.559414825 -0500
+@@ -1534,6 +1534,17 @@
+ 	short pref_node_fork;
+ #endif
+ 	struct rcu_head rcu;
++ 
++	struct {                                       /* ATOP */
++		unsigned long      dsk_rio, dsk_wio;   /* ATOP */
++		unsigned long long dsk_rsz, dsk_wsz;   /* ATOP */
++		unsigned long      tcp_snd, tcp_rcv;   /* ATOP */
++		unsigned long long tcp_ssz, tcp_rsz;   /* ATOP */
++		unsigned long      udp_snd, udp_rcv;   /* ATOP */
++		unsigned long long udp_ssz, udp_rsz;   /* ATOP */
++		unsigned long      raw_snd, raw_rcv;   /* ATOP */
++	} stat;                                        /* ATOP */
++
+ 
+ 	/*
+ 	 * cache last used pipe for splice
+diff -Naur a/kernel/acct.c b/kernel/acct.c
+--- a/kernel/acct.c	2012-01-04 18:55:44.000000000 -0500
++++ b/kernel/acct.c	2012-02-12 19:14:46.361992369 -0500
+@@ -556,7 +556,7 @@
+ 	ac.ac_exitcode = pacct->ac_exitcode;
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 	ac.ac_io = encode_comp_t(0 /* current->io_usage */);	/* %% */
+-	ac.ac_rw = encode_comp_t(ac.ac_io / 1024);
++	ac.ac_rw = encode_comp_t(current->stat.dsk_rio + current->stat.dsk_wio); /* ATOP */
+ 	ac.ac_swaps = encode_comp_t(0);
+ 
+ 	/*
+diff -Naur a/kernel/fork.c b/kernel/fork.c
+--- a/kernel/fork.c	2012-01-04 18:55:44.000000000 -0500
++++ b/kernel/fork.c	2012-02-12 16:19:35.719393487 -0500
+@@ -779,6 +779,14 @@
+ 
+ 	tsk->min_flt = tsk->maj_flt = 0;
+ 	tsk->nvcsw = tsk->nivcsw = 0;
++	tsk->stat.dsk_rio = tsk->stat.dsk_wio = 0;    /* ATOP */
++	tsk->stat.dsk_rsz = tsk->stat.dsk_wsz = 0;    /* ATOP */
++	tsk->stat.tcp_snd = tsk->stat.tcp_rcv = 0;    /* ATOP */
++	tsk->stat.tcp_ssz = tsk->stat.tcp_rsz = 0;    /* ATOP */
++	tsk->stat.udp_snd = tsk->stat.udp_rcv = 0;    /* ATOP */
++	tsk->stat.udp_ssz = tsk->stat.udp_rsz = 0;    /* ATOP */
++	tsk->stat.raw_snd = tsk->stat.raw_rcv = 0;    /* ATOP */
++
+ #ifdef CONFIG_DETECT_HUNG_TASK
+ 	tsk->last_switch_count = tsk->nvcsw + tsk->nivcsw;
+ #endif
+diff -Naur a/net/socket.c b/net/socket.c
+--- a/net/socket.c	2012-01-04 18:55:44.000000000 -0500
++++ b/net/socket.c	2012-02-12 19:01:42.161796223 -0500
+@@ -561,8 +561,29 @@
+ 				 struct msghdr *msg, size_t size)
+ {
+ 	int err = security_socket_sendmsg(sock, msg, size);
++	if (!err)
++		err = __sock_sendmsg_nosec(iocb, sock, msg, size);
+ 
+-	return err ?: __sock_sendmsg_nosec(iocb, sock, msg, size);
++	if (err >= 0 && sock->sk) {                                       /* ATOP */
++		switch (sock->sk->sk_family) {                            /* ATOP */
++		case PF_INET:                                             /* ATOP */
++		case PF_INET6:                                            /* ATOP */
++			switch (sock->sk->sk_type) {                      /* ATOP */
++			case SOCK_STREAM:                                 /* ATOP */
++         	 		current->group_leader->stat.tcp_snd++;    /* ATOP */
++				current->group_leader->stat.tcp_ssz+=size;/* ATOP */
++				break;                                    /* ATOP */
++			case SOCK_DGRAM:                                  /* ATOP */
++				current->group_leader->stat.udp_snd++;    /* ATOP */
++				current->group_leader->stat.udp_ssz+=size;/* ATOP */
++				break;                                    /* ATOP */
++			case SOCK_RAW:                                    /* ATOP */
++				current->group_leader->stat.raw_snd++;    /* ATOP */
++			}                                                 /* ATOP */
++		}                                                         /* ATOP */
++	}                                                                 /* ATOP */
++	return err;
++	
+ }
+ 
+ int sock_sendmsg(struct socket *sock, struct msghdr *msg, size_t size)
+@@ -711,7 +732,29 @@
+ {
+ 	int err = security_socket_recvmsg(sock, msg, size, flags);
+ 
+-	return err ?: __sock_recvmsg_nosec(iocb, sock, msg, size, flags);
++	if (!err)
++		err = __sock_recvmsg_nosec(iocb, sock, msg, size, flags);
++
++	if (err >= 0 && sock->sk) {					        /* ATOP */
++		switch (sock->sk->sk_family) {				        /* ATOP */
++		case PF_INET:					                /* ATOP */
++		case PF_INET6:					                /* ATOP */
++			switch (sock->sk->sk_type) {		                /* ATOP */
++			case SOCK_STREAM:		                        /* ATOP */
++				current->group_leader->stat.tcp_rcv++;		/* ATOP */
++				current->group_leader->stat.tcp_rsz+=err;	/* ATOP */
++				break;			                        /* ATOP */
++			case SOCK_DGRAM:                         		/* ATOP */
++				current->group_leader->stat.udp_rcv++;		/* ATOP */
++				current->group_leader->stat.udp_rsz+=err;	/* ATOP */
++				break;		                         	/* ATOP */
++			case SOCK_RAW:		                         	/* ATOP */
++				current->group_leader->stat.raw_rcv++;		/* ATOP */
++				break;			                        /* ATOP */
++			}					                /* ATOP */
++		}							        /* ATOP */
++	}								        /* ATOP */
++	return err;
+ }
+ 
+ int sock_recvmsg(struct socket *sock, struct msghdr *msg,
