@@ -1,6 +1,6 @@
-diff -aur a/include/linux/acct.h b/include/linux/acct.h
---- a/include/linux/acct.h	2012-02-12 20:22:48.682956336 -0500
-+++ b/include/linux/acct.h	2012-02-13 05:57:53.455075649 -0500
+diff -Naur linux-3.4.1-pf/include/linux/acct.h linux-3.4.1-pf__0/include/linux/acct.h
+--- linux-3.4.1-pf/include/linux/acct.h	2012-05-20 18:29:13.000000000 -0400
++++ linux-3.4.1-pf__0/include/linux/acct.h	2012-06-16 11:58:19.665545111 -0400
 @@ -97,6 +97,54 @@
  	char		ac_comm[ACCT_COMM];	/* Command Name */
  };
@@ -56,12 +56,12 @@ diff -aur a/include/linux/acct.h b/include/linux/acct.h
  /*
   *  accounting flags
   */
-@@ -145,7 +193,13 @@
-  * 5: new binary incompatible format (128 bytes, second half)
-  *
-  */
-+#define CONFIG_PROCESS_ACCT_ATOP
+@@ -149,6 +197,13 @@
+ #undef ACCT_VERSION
+ #undef AHZ
  
++#define CONFIG_PROCESS_ACCT_ATOP
++
 +#ifdef CONFIG_PROCESS_ACCT_ATOP
 +#define ACCT_VERSION	6
 +#define AHZ		(USER_HZ)
@@ -70,7 +70,7 @@ diff -aur a/include/linux/acct.h b/include/linux/acct.h
  #ifdef CONFIG_BSD_PROCESS_ACCT_V3
  #define ACCT_VERSION	3
  #define AHZ		100
-@@ -159,6 +213,7 @@
+@@ -162,6 +217,7 @@
  #define AHZ		(USER_HZ)
  typedef struct acct acct_t;
  #endif
@@ -78,10 +78,10 @@ diff -aur a/include/linux/acct.h b/include/linux/acct.h
  
  #else
  #define ACCT_VERSION	2
-diff -aur a/kernel/acct.c b/kernel/acct.c
---- a/kernel/acct.c	2012-02-12 20:23:56.272111354 -0500
-+++ b/kernel/acct.c	2012-02-13 05:57:53.578074113 -0500
-@@ -396,7 +396,7 @@
+diff -Naur linux-3.4.1-pf/kernel/acct.c linux-3.4.1-pf__0/kernel/acct.c
+--- linux-3.4.1-pf/kernel/acct.c	2012-06-16 11:56:11.369573481 -0400
++++ linux-3.4.1-pf__0/kernel/acct.c	2012-06-16 11:57:05.189281914 -0400
+@@ -376,7 +376,7 @@
  	return exp;
  }
  
@@ -90,7 +90,7 @@ diff -aur a/kernel/acct.c b/kernel/acct.c
  /*
   * encode an u64 into a comp2_t (24 bits)
   *
-@@ -543,6 +543,30 @@
+@@ -523,6 +523,30 @@
  	ac.ac_ppid = task_tgid_nr_ns(rcu_dereference(current->real_parent), ns);
  	rcu_read_unlock();
  #endif
