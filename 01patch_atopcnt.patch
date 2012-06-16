@@ -1,7 +1,7 @@
-diff -Naur a/block/blk-core.c b/block/blk-core.c
---- a/block/blk-core.c	2012-02-12 14:42:59.488856338 -0500
-+++ b/block/blk-core.c	2012-02-12 19:18:24.133269854 -0500
-@@ -92,6 +92,17 @@
+diff -Naur linux-3.4.1-pf/block/blk-core.c linux-3.4.1-pf__0/block/blk-core.c
+--- linux-3.4.1-pf/block/blk-core.c	2012-06-16 11:50:40.028035179 -0400
++++ linux-3.4.1-pf__0/block/blk-core.c	2012-06-16 11:46:46.825965207 -0400
+@@ -94,6 +94,17 @@
  		rq->part = part;
  	}
  
@@ -19,39 +19,53 @@ diff -Naur a/block/blk-core.c b/block/blk-core.c
  	part_stat_unlock();
  }
  
-diff -Naur a/fs/proc/array.c b/fs/proc/array.c
---- a/fs/proc/array.c	2012-01-04 18:55:44.000000000 -0500
-+++ b/fs/proc/array.c	2012-02-12 16:19:35.692393822 -0500
-@@ -512,6 +512,25 @@
- 		(unsigned long long)delayacct_blkio_ticks(task),
- 		cputime_to_clock_t(gtime),
- 		cputime_to_clock_t(cgtime));
+diff -Naur linux-3.4.1-pf/fs/proc/array.c linux-3.4.1-pf__0/fs/proc/array.c
+--- linux-3.4.1-pf/fs/proc/array.c	2012-06-16 11:50:40.901363781 -0400
++++ linux-3.4.1-pf__0/fs/proc/array.c	2012-06-16 11:49:18.841808336 -0400
+@@ -565,7 +565,25 @@
+ 	seq_put_decimal_ull(m, ' ', (mm && permitted) ? mm->start_data : 0);
+ 	seq_put_decimal_ull(m, ' ', (mm && permitted) ? mm->end_data : 0);
+ 	seq_put_decimal_ull(m, ' ', (mm && permitted) ? mm->start_brk : 0);
+-	seq_putc(m, '\n');
 +
-+		seq_printf(m,                                /* ATOP */
-+			"%lu %llu %lu %llu %lu %llu %lu "    /* ATOP */
-+			"%llu %lu %llu %lu %llu %lu %lu\n",  /* ATOP */
-+			task->stat.dsk_rio,                  /* ATOP */
-+			task->stat.dsk_rsz,                  /* ATOP */
-+			task->stat.dsk_wio,                  /* ATOP */
-+			task->stat.dsk_wsz,                  /* ATOP */
-+			task->stat.tcp_snd,                  /* ATOP */
-+			task->stat.tcp_ssz,                  /* ATOP */
-+			task->stat.tcp_rcv,                  /* ATOP */
-+			task->stat.tcp_rsz,                  /* ATOP */
-+			task->stat.udp_snd,                  /* ATOP */
-+			task->stat.udp_ssz,                  /* ATOP */
-+			task->stat.udp_rcv,                  /* ATOP */
-+			task->stat.udp_rsz,                  /* ATOP */
-+			task->stat.raw_snd,                  /* ATOP */
-+			task->stat.raw_rcv);                 /* ATOP */
++	seq_printf(m,                                /* ATOP */
++		"%lu %llu %lu %llu %lu %llu %lu "    /* ATOP */
++		"%llu %lu %llu %lu %llu %lu %lu\n",  /* ATOP */
++		task->stat.dsk_rio,                  /* ATOP */
++		task->stat.dsk_rsz,                  /* ATOP */
++		task->stat.dsk_wio,                  /* ATOP */
++		task->stat.dsk_wsz,                  /* ATOP */
++		task->stat.tcp_snd,                  /* ATOP */
++		task->stat.tcp_ssz,                  /* ATOP */
++		task->stat.tcp_rcv,                  /* ATOP */
++		task->stat.tcp_rsz,                  /* ATOP */
++		task->stat.udp_snd,                  /* ATOP */
++		task->stat.udp_ssz,                  /* ATOP */
++		task->stat.udp_rcv,                  /* ATOP */
++		task->stat.udp_rsz,                  /* ATOP */
++		task->stat.raw_snd,                  /* ATOP */
++		task->stat.raw_rcv);                 /* ATOP */
 + 
  	if (mm)
  		mmput(mm);
  	return 0;
-diff -Naur a/include/linux/sched.h b/include/linux/sched.h
---- a/include/linux/sched.h	2012-02-12 14:43:00.768840337 -0500
-+++ b/include/linux/sched.h	2012-02-12 19:15:32.559414825 -0500
-@@ -1534,6 +1534,17 @@
+diff -Naur linux-3.4.1-pf/fs/proc/array.c.rej linux-3.4.1-pf__0/fs/proc/array.c.rej
+--- linux-3.4.1-pf/fs/proc/array.c.rej	1969-12-31 19:00:00.000000000 -0500
++++ linux-3.4.1-pf__0/fs/proc/array.c.rej	2012-06-16 11:49:21.321794901 -0400
+@@ -0,0 +1,9 @@
++--- fs/proc/array.c	2012-01-04 18:55:44.000000000 -0500
+++++ fs/proc/array.c	2012-02-12 16:19:35.692393822 -0500
++@@ -512,6 +512,25 @@
++ 		(unsigned long long)delayacct_blkio_ticks(task),
++ 		cputime_to_clock_t(gtime),
++ 		cputime_to_clock_t(cgtime));
++ 	if (mm)
++ 		mmput(mm);
++ 	return 0;
+diff -Naur linux-3.4.1-pf/include/linux/sched.h linux-3.4.1-pf__0/include/linux/sched.h
+--- linux-3.4.1-pf/include/linux/sched.h	2012-06-16 11:50:40.961363456 -0400
++++ linux-3.4.1-pf__0/include/linux/sched.h	2012-06-16 11:46:46.825965207 -0400
+@@ -1586,6 +1586,17 @@
  	short pref_node_fork;
  #endif
  	struct rcu_head rcu;
@@ -69,10 +83,10 @@ diff -Naur a/include/linux/sched.h b/include/linux/sched.h
  
  	/*
  	 * cache last used pipe for splice
-diff -Naur a/kernel/acct.c b/kernel/acct.c
---- a/kernel/acct.c	2012-01-04 18:55:44.000000000 -0500
-+++ b/kernel/acct.c	2012-02-12 19:14:46.361992369 -0500
-@@ -556,7 +556,7 @@
+diff -Naur linux-3.4.1-pf/kernel/acct.c linux-3.4.1-pf__0/kernel/acct.c
+--- linux-3.4.1-pf/kernel/acct.c	2012-05-20 18:29:13.000000000 -0400
++++ linux-3.4.1-pf__0/kernel/acct.c	2012-06-16 11:46:46.829298524 -0400
+@@ -536,7 +536,7 @@
  	ac.ac_exitcode = pacct->ac_exitcode;
  	spin_unlock_irq(&current->sighand->siglock);
  	ac.ac_io = encode_comp_t(0 /* current->io_usage */);	/* %% */
@@ -81,10 +95,10 @@ diff -Naur a/kernel/acct.c b/kernel/acct.c
  	ac.ac_swaps = encode_comp_t(0);
  
  	/*
-diff -Naur a/kernel/fork.c b/kernel/fork.c
---- a/kernel/fork.c	2012-01-04 18:55:44.000000000 -0500
-+++ b/kernel/fork.c	2012-02-12 16:19:35.719393487 -0500
-@@ -779,6 +779,14 @@
+diff -Naur linux-3.4.1-pf/kernel/fork.c linux-3.4.1-pf__0/kernel/fork.c
+--- linux-3.4.1-pf/kernel/fork.c	2012-06-16 11:50:41.308028243 -0400
++++ linux-3.4.1-pf__0/kernel/fork.c	2012-06-16 11:46:46.829298524 -0400
+@@ -857,6 +857,14 @@
  
  	tsk->min_flt = tsk->maj_flt = 0;
  	tsk->nvcsw = tsk->nivcsw = 0;
@@ -99,10 +113,10 @@ diff -Naur a/kernel/fork.c b/kernel/fork.c
  #ifdef CONFIG_DETECT_HUNG_TASK
  	tsk->last_switch_count = tsk->nvcsw + tsk->nivcsw;
  #endif
-diff -Naur a/net/socket.c b/net/socket.c
---- a/net/socket.c	2012-01-04 18:55:44.000000000 -0500
-+++ b/net/socket.c	2012-02-12 19:01:42.161796223 -0500
-@@ -561,8 +561,29 @@
+diff -Naur linux-3.4.1-pf/net/socket.c linux-3.4.1-pf__0/net/socket.c
+--- linux-3.4.1-pf/net/socket.c	2012-06-16 11:50:42.028024344 -0400
++++ linux-3.4.1-pf__0/net/socket.c	2012-06-16 11:46:46.829298524 -0400
+@@ -585,8 +585,29 @@
  				 struct msghdr *msg, size_t size)
  {
  	int err = security_socket_sendmsg(sock, msg, size);
@@ -133,7 +147,7 @@ diff -Naur a/net/socket.c b/net/socket.c
  }
  
  int sock_sendmsg(struct socket *sock, struct msghdr *msg, size_t size)
-@@ -711,7 +732,29 @@
+@@ -763,7 +784,29 @@
  {
  	int err = security_socket_recvmsg(sock, msg, size, flags);
  
