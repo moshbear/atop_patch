@@ -7,7 +7,7 @@ screen are different.
 
 Two kernel-patches are delivered for ATOP:
 
-  01patch-3.2.2_atopcnt
+  01patch_atopcnt
 	This patch takes care that statistical counters are added
 	to the process-administration (task_struct) and that these
 	counters are incremented per process.
@@ -36,7 +36,7 @@ Two kernel-patches are delivered for ATOP:
 	because the conventional layout of the process-accounting
 	record has not been adapted.
 
-  02patch-3.2.2_atopacct
+  02patch_atopacct
 	This patch takes care that the additional statistical
 	counters are added to the process-accounting record (yes,
 	this means an incompatible layout of this record).
@@ -56,17 +56,17 @@ The following steps are needed to install these patches:
 
      1.	Install the kernel-sources (e.g. as a subdirectory of /usr/src).
 
-     2. Go to the new subdirectory, e.g. linux-3.2.2
+     2. Go to the new subdirectory, e.g. linux-3.4.1
   
      3.	Start the command to patch the new tree.
 
-	Example for kernel-version 3.2.2:
+	Example for kernel-version 3.4.1:
 
-		patch -p1 < 01patch-3.2.2_atopcnt
+		patch -p1 < 01patch_atopcnt
 
-		patch -p1 < 02patch-3.2.2_atopacct
+		patch -p1 < 02patch_atopacct
 
-	This will modify the kernel-sources under /usr/src/linux-3.2.2
+	This will modify the kernel-sources under /usr/src/linux-3.4.1
 
      4.	Build a new kernel and reboot.
 
@@ -85,7 +85,7 @@ The following steps are needed to install these patches:
 Gerlof Langeveld <gerlof@atoptool.nl>
 
 Credits for this specific port: Marko Zagožen
-Updated for 3.2.2 by: Andrey Vul
+Updated for 3.4.1 by: m0shbear <andrey@moshbear.net>
 
 Disclaimer:
 The authors deny any warranty for any data loss and damage whatsoever
