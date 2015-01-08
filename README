@@ -91,3 +91,5 @@ Disclaimer:
 The authors deny any warranty for any data loss and damage whatsoever
 that may be caused directly or indirectly by using this software.
 This is experimental software. Use at your own risk.
+
+Note: this for atop v1; atop v2 uses netatop.
